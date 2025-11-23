@@ -2,13 +2,9 @@ namespace Markdown.Core.Parsing.Nodes;
 
 /// <summary>
 /// Полужирный (__...__): контейнер инлайнов внутри выделения
+/// ОГРАНИЧЕНИЕ: Может содержать EmphasisNode (по спецификации)
 /// </summary>
 public class StrongNode : InlineNode
 {
-    public IList<InlineNode> Inlines { get; }
-
-    public StrongNode()
-    {
-        Inlines = new List<InlineNode>();
-    }
+    public IList<InlineNode> Inlines { get; } = new List<InlineNode>();
 }

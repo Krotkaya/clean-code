@@ -7,10 +7,5 @@ namespace Markdown.Core.Parsing.Nodes;
 /// </summary>
 public class ParagraphNode : BlockNode
 { 
-    public IList<InlineNode> Inlines { get; }
-
-    public ParagraphNode()
-    {
-        Inlines = new List<InlineNode>();
-    }
+    public IList<InlineNode> Inlines { get; } = new List<InlineNode>();
 }

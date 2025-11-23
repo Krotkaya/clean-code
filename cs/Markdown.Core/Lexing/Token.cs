@@ -11,6 +11,6 @@ public readonly struct Token(TokenKind kind, ReadOnlyMemory<char> slice, int pos
 
     public override string ToString()
     {
-        throw new NotImplementedException();
+        return $"{Kind} '{Slice}' at {Position}";
     }
 }

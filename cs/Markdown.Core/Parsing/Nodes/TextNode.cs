@@ -3,12 +3,7 @@ namespace Markdown.Core.Parsing.Nodes;
 /// <summary>
 /// Обычный текст без разметки, конечный лист дерева
 /// </summary>
-public class TextNode : InlineNode
+public class TextNode(string text) : InlineNode
 {
-    public string Text { get; }
-
-    public TextNode(string text)
-    {
-        Text = text;
-    }
+    public string Text { get; } = text;
 }

@@ -1,4 +1,3 @@
-
 namespace Markdown.Core.Parsing.Nodes;
 
 /// <summary>
