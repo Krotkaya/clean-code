@@ -5,5 +5,4 @@ namespace Markdown.Core.Parsing.Nodes;
 /// </summary>
 public abstract class InlineNode : Node
 {
-    
 }

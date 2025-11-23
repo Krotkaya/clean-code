@@ -2,7 +2,6 @@ namespace Markdown.Core.Parsing.Nodes;
 
 /// <summary>
 /// Полужирный (__...__): контейнер инлайнов внутри выделения
-/// ОГРАНИЧЕНИЕ: Может содержать EmphasisNode (по спецификации)
 /// </summary>
 public class StrongNode : InlineNode
 {

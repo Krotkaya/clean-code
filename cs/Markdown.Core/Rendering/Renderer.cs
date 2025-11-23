@@ -21,24 +21,23 @@ public class Renderer : IRenderer
                       break;
               }
           }
-
           return result.ToString();
       }
 
-      private string RenderHeading(HeadingNode heading)
+      private static string RenderHeading(HeadingNode heading)
       {
           var content = RenderInlines(heading.Inlines);
           return $"<h{heading.Level}>{content}</h{heading.Level}>";
       }
 
-      private string RenderParagraph(ParagraphNode paragraph)
+      private static string RenderParagraph(ParagraphNode paragraph)
       {
           var content = RenderInlines(paragraph.Inlines);
           return $"<p>{content}</p>";
       }
       
 
-      private string RenderInlines(IList<InlineNode> inlines)
+      private static string RenderInlines(IList<InlineNode> inlines)
       {
           var builder = new StringBuilder();
 
@@ -47,7 +46,7 @@ public class Renderer : IRenderer
               switch (inline)
               {
                   case TextNode text:
-                      builder.Append(EscapeHtml(text.Text));
+                      builder.Append(Escape(text.Text));
                       break;
                   case EmphasisNode emphasis:
                       builder.Append("<em>");
@@ -59,13 +58,19 @@ public class Renderer : IRenderer
                       builder.Append(RenderInlines(strong.Inlines));
                       builder.Append("</strong>");
                       break;
+                  case LinkNode link:
+                      builder.Append("<a href=\"");
+                      builder.Append(Escape(link.Href));
+                      builder.Append("\">");
+                      builder.Append(RenderInlines(link.Inlines));
+                      builder.Append("</a>");
+                      break;
               }
           }
-
           return builder.ToString();
       }
 
-      private string EscapeHtml(string text) =>
+      private static string Escape(string text) =>
           text.Replace("&", "&amp;")
               .Replace("<", "&lt;")
               .Replace(">", "&gt;")

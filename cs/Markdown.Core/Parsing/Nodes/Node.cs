@@ -6,5 +6,4 @@ namespace Markdown.Core.Parsing.Nodes;
 /// </summary>
 public abstract class Node
 {
-    
 }
