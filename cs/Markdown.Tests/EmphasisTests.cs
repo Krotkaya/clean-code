@@ -6,9 +6,6 @@ using NUnit.Framework;
 
 namespace Markdown.Tests;
 
-/// <summary>
-/// Тесты курсивного шрифта
-/// </summary>
 public class EmphasisTests
 {
     private Md _markdown;

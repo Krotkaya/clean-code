@@ -4,7 +4,7 @@ using Markdown.Core.Parsing.Nodes;
 
 namespace Markdown.Core.Parsing;
 
-public class InlineParser(
+internal class InlineParser(
     IReadOnlyList<Token> tokens,
     Func<Token> moveNext,
     Func<Token> currentToken,
@@ -46,35 +46,7 @@ public class InlineParser(
         var emphasis = new EmphasisNode();
         return ParseEmphasisContent(emphasis, startIndex);
     }
-
-    private bool IsInvalidEmphasisStart() =>
-        currentToken().Kind is TokenKind.Space or TokenKind.NewLine or TokenKind.Eof;
-
-    private InlineNode ParseEmphasisContent(EmphasisNode emphasis, int startIndex)
-    {
-        while (!IsEndOfContent())
-        {
-            if (currentToken().Kind == TokenKind.Underscore)
-            {
-                var closeResult = TryCloseEmphasis(emphasis, startIndex);
-                if (closeResult.ShouldReturn)
-                    return closeResult.Node;
-            }
-            else if (currentToken().Kind == TokenKind.DoubleUnderscore)
-            {
-                emphasis.Inlines.Add(CreateTextNode("__"));
-                moveNext();
-            }
-            else
-            {
-                var inline = ParseInline();
-                if (inline != null)
-                    emphasis.Inlines.Add(inline);
-            }
-        }
-        return ConvertToTextNode(emphasis, "_");
-    }
-
+    
     private InlineNode ParseStrong()
     {
         var startIndex = currentIndex() - 1;
@@ -86,65 +58,7 @@ public class InlineParser(
         var strong = new StrongNode();
         return ParseStrongContent(strong, startIndex);
     }
-
-    private bool IsInvalidStrongStart() =>
-        currentToken().Kind is TokenKind.Space or TokenKind.NewLine or TokenKind.Eof;
-
-    private InlineNode ParseStrongContent(StrongNode strong, int startIndex)
-    {
-        while (!IsEndOfContent())
-        {
-            if (currentToken().Kind == TokenKind.DoubleUnderscore)
-            {
-                var closeResult = TryCloseStrong(strong, startIndex);
-                if (closeResult.ShouldReturn)
-                    return closeResult.Node;
-            }
-            else if (currentToken().Kind == TokenKind.Underscore)
-            {
-                var emphasis = ParseEmphasis();
-                strong.Inlines.Add(emphasis);
-            }
-            else
-            {
-                var inline = ParseInline();
-                if (inline != null)
-                    strong.Inlines.Add(inline);
-            }
-        }
-        return ConvertToTextNode(strong, "__");
-    }
-
-    private bool IsEndOfContent() =>
-        currentToken().Kind is TokenKind.NewLine or TokenKind.Eof;
-
-    private Result TryCloseStrong(StrongNode strong, int startIndex)
-    {
-        var closeIndex = currentIndex() - 1;
-        if (validator.IsValidStrongClose(tokens, startIndex, closeIndex))
-        {
-            moveNext();
-            return new Result(true, strong);
-        }
-
-        strong.Inlines.Add(CreateTextNode("__"));
-        moveNext();
-        return new Result(false, null);
-    }
-
-    private Result TryCloseEmphasis(EmphasisNode emphasis, int startIndex)
-    {
-        var closeIndex = currentIndex() - 1;
-        if (validator.IsValidEmphasisClose(tokens, startIndex, closeIndex))
-        {
-            moveNext();
-            return new Result(true, emphasis);
-        }
-        emphasis.Inlines.Add(CreateTextNode("_"));
-        moveNext();
-        return new Result(false, null);
-    }
-
+    
     private InlineNode ParseLink()
     {
         var linkTextNodes = new List<InlineNode>();
@@ -185,7 +99,96 @@ public class InlineParser(
         return new LinkNode(href, linkTextNodes);
     }
 
-    private InlineNode RestoreAsText(string prefix, IList<InlineNode> nodes, string suffix = "")
+    private bool IsInvalidEmphasisStart() =>
+        currentToken().Kind is TokenKind.Space or TokenKind.NewLine or TokenKind.Eof;
+
+    private InlineNode ParseEmphasisContent(EmphasisNode emphasis, int startIndex)
+    {
+        while (!IsEndOfContent())
+        {
+            if (currentToken().Kind == TokenKind.Underscore)
+            {
+                if (TryCloseEmphasis(emphasis, startIndex, out var node))
+                    return node!;
+            }
+            else if (currentToken().Kind == TokenKind.DoubleUnderscore)
+            {
+                emphasis.Inlines.Add(CreateTextNode("__"));
+                moveNext();
+            }
+            else
+            {
+                var inline = ParseInline();
+                if (inline != null)
+                    emphasis.Inlines.Add(inline);
+            }
+        }
+        return ConvertToTextNode(emphasis, "_");
+    }
+
+    private bool IsInvalidStrongStart() => 
+        currentToken().Kind is TokenKind.Space or TokenKind.NewLine or TokenKind.Eof;
+
+    private InlineNode ParseStrongContent(StrongNode strong, int startIndex)
+    {
+        while (!IsEndOfContent())
+        {
+            if (currentToken().Kind == TokenKind.DoubleUnderscore)
+            {
+                if (TryCloseStrong(strong, startIndex, out var node))
+                    return node!;
+            }
+            else if (currentToken().Kind == TokenKind.Underscore)
+            {
+                var emphasis = ParseEmphasis();
+                strong.Inlines.Add(emphasis);
+            }
+            else
+            {
+                var inline = ParseInline();
+                if (inline != null)
+                    strong.Inlines.Add(inline);
+            }
+        }
+        return ConvertToTextNode(strong, "__");
+    }
+
+    private bool IsEndOfContent() => currentToken().Kind is TokenKind.NewLine or TokenKind.Eof;
+    
+    private bool TryCloseEmphasis(EmphasisNode emphasis, int startIndex, out InlineNode? node)
+    {
+        var closeIndex = currentIndex() - 1;
+        if (validator.IsValidEmphasisClose(tokens, startIndex, closeIndex))
+        {
+            moveNext();
+            node = emphasis;
+            return true;
+        }
+        emphasis.Inlines.Add(CreateTextNode("_"));
+        moveNext();
+        node = null;
+        return false;
+    }
+
+    private bool TryCloseStrong(StrongNode strong, int startIndex, out InlineNode? node)
+    {
+        var closeIndex = currentIndex() - 1;
+        if (validator.IsValidStrongClose(tokens, startIndex, closeIndex))
+        {
+            moveNext();
+            node = strong;
+            return true;
+        }
+
+        strong.Inlines.Add(CreateTextNode("__"));
+        moveNext();
+        node = null;
+        return false;
+    }
+    
+    private static TextNode CreateTextNode(string text) => new(text);
+
+    private static TextNode RestoreAsText(string prefix, IList<InlineNode> nodes, string suffix = "")
     {
         var builder = new StringBuilder(prefix);
         foreach (var node in nodes)
@@ -194,7 +197,7 @@ public class InlineParser(
         return new TextNode(builder.ToString());
     }
 
-    private InlineNode ConvertToTextNode(InlineNode node, string prefix)
+    private static TextNode ConvertToTextNode(InlineNode node, string prefix)
     {
         var textContent = new StringBuilder();
         textContent.Append(prefix);
@@ -225,13 +228,5 @@ public class InlineParser(
                 break;
         }
         return result.ToString();
-    }
-
-    private static TextNode CreateTextNode(string text) => new(text);
-
-    private class Result(bool shouldReturn, InlineNode node)
-    {
-        public bool ShouldReturn { get; } = shouldReturn;
-        public InlineNode Node { get; } = node;
     }
 }

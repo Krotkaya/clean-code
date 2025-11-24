@@ -22,22 +22,26 @@ public class Lexer : ILexer
 
             switch (symbol)
             {
-                case '#' when IsAtLineStart(tokens) && i + 1 < source.Length
-                                                    && tokensSpan[i + 1] == ' ':
+                case '#' when IsAtLineStart(tokens) && i + 1 < length && tokensSpan[i + 1] == ' ':
                     tokens.Add(new Token(TokenKind.Hash, source.Slice(i, 1), i));
                     i += 1;
                     continue;
                 
-                case '\\' when i + 1 < source.Length:
-                    var next = tokensSpan[i + 1];
-                    if (next == '_' && i + 2 < source.Length && tokensSpan[i + 2] == '_')
+                case '#':
+                    tokens.Add(new Token(TokenKind.Text, source.Slice(i, 1), i));
+                    i += 1;
+                    continue;
+                
+                case '\\' when i + 1 < length:
+                    var nextToken = tokensSpan[i + 1];
+                    if (nextToken == '_' && i + 2 < length && tokensSpan[i + 2] == '_')
                     {
                         tokens.Add(new Token(TokenKind.Text, source.Slice(i + 1, 2), i));
                         i += 3;
                         continue;
                     }
 
-                    if (IsSpecialCharacter(next))
+                    if (IsSpecialCharacter(nextToken))
                     {
                         tokens.Add(new Token(TokenKind.Text, source.Slice(i + 1, 1), i));
                         i += 2;
@@ -53,12 +57,12 @@ public class Lexer : ILexer
                     i += 1;
                     continue;
                 
-                case '_' when i + 1 < source.Length && tokensSpan[i + 1] == '_':
+                case '_' when i + 1 < length && tokensSpan[i + 1] == '_':
                     tokens.Add(new Token(TokenKind.DoubleUnderscore, source.Slice(i, 2), i));
                     i += 2;
                     continue;
                 
-                case '_' when i + 1 <= source.Length:
+                case '_' when i + 1 <= length:
                     tokens.Add(new Token(TokenKind.Underscore, source.Slice(i, 1), i));
                     i += 1;
                     continue;
@@ -73,7 +77,7 @@ public class Lexer : ILexer
                     i += 1;
                     continue;
                 
-                case '\r' when i + 1 < source.Length && tokensSpan[i + 1] == '\n':
+                case '\r' when i + 1 < length && tokensSpan[i + 1] == '\n':
                     tokens.Add(new Token(TokenKind.NewLine, source.Slice(i, 2), i));
                     i += 2;
                     continue;
@@ -99,11 +103,11 @@ public class Lexer : ILexer
                     continue;
             }
             
-        var startText = i;
+            var startText = i;
             while (i < length)
             {
                 symbol = tokensSpan[i];
-                if (symbol is '\\' or '#' or '_' or '*' or '-' or '+' or '[' or ']' or '(' or ')' or ' ' or '\n' or '\r')
+                if (IsSpecialCharacter(symbol) || symbol is ' ' or '\n' or '\r')
                     break;
                 i++;
             }
@@ -118,9 +122,8 @@ public class Lexer : ILexer
     }
     
     private static bool IsSpecialCharacter(char c) =>
-        c is '#' or '_' or '\\' or '*' or '-' or '+' or '[' or ']' or '(' or ')';
+        c is '#' or '_' or '\\' or '[' or ']' or '(' or ')';
 
     private static bool IsAtLineStart(List<Token> tokens) =>
         tokens.Count == 0 || tokens[^1].Kind == TokenKind.NewLine;
-    
 }

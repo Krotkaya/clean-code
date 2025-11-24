@@ -8,10 +8,9 @@ public class Md(ILexer lexer, IParser parser, IRenderer renderer)
 {
     public string Render(string text)
     {
-         var tokens = lexer.Tokenize(text.AsMemory());
+        var tokens = lexer.Tokenize(text.AsMemory());
         var document = parser.Parse(tokens);
         return renderer.Render(document);
-        
     }
 
 }

@@ -2,7 +2,7 @@ using Markdown.Core.Lexing;
 
 namespace Markdown.Core.Parsing;
 
-public class InlineValidator
+internal class InlineValidator
 {
     public bool IsValidEmphasisClose(IReadOnlyList<Token> tokens, int startIndex, int closeIndex)
     {
@@ -42,7 +42,7 @@ public class InlineValidator
         return true;
     }
 
-    private bool HasValidOpeningBoundary(IReadOnlyList<Token> tokens, int startIndex)
+    private static bool HasValidOpeningBoundary(IReadOnlyList<Token> tokens, int startIndex)
     {
         if (startIndex + 1 >= tokens.Count)
             return true;
@@ -51,7 +51,7 @@ public class InlineValidator
         return next.Kind is not TokenKind.Space and not TokenKind.NewLine;
     }
 
-    private bool HasValidClosingBoundary(IReadOnlyList<Token> tokens, int closeIndex)
+    private static bool HasValidClosingBoundary(IReadOnlyList<Token> tokens, int closeIndex)
     {
         if (closeIndex - 1 < 0)
             return true;
@@ -67,7 +67,7 @@ public class InlineValidator
         return next.Kind is TokenKind.Space or TokenKind.NewLine or TokenKind.Eof;
     }
 
-    private bool IsInDigitContext(IReadOnlyList<Token> tokens, int index) =>
+    private static bool IsInDigitContext(IReadOnlyList<Token> tokens, int index) =>
         HasDigitBefore(tokens, index) || HasDigitAfter(tokens, index);
 
     private static bool HasDigitBefore(IReadOnlyList<Token> tokens, int index)

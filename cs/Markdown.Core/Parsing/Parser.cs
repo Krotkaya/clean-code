@@ -60,10 +60,11 @@ public class Parser : IParser
 
     private bool IsEndOfFile() => _currentToken.Kind == TokenKind.Eof;
 
-    private bool IsHeadingStart() =>
-        _currentToken.Kind == TokenKind.Hash && IsAtStartOfLine();
-
-
+    private bool IsHeadingStart() => _currentToken.Kind == TokenKind.Hash && IsAtStartOfLine();
+    
+    private bool IsAtStartOfLine() => _currentIndex <= 1 || 
+                                      _allTokens[_currentIndex - 2].Kind == TokenKind.NewLine;
+    
     private ParagraphNode ParseParagraph()
     {
         var paragraph = new ParagraphNode();
@@ -82,10 +83,7 @@ public class Parser : IParser
         return paragraph;
     }
 
-    private bool IsEndOfLine()
-    {
-        return _currentToken.Kind == TokenKind.NewLine || _currentToken.Kind == TokenKind.Eof;
-    }
+    private bool IsEndOfLine() => _currentToken.Kind is TokenKind.NewLine or TokenKind.Eof;
 
     private HeadingNode ParseHeading()
     {
@@ -112,12 +110,7 @@ public class Parser : IParser
         if (_currentToken.Kind == TokenKind.Space)
             MoveOnNextToken();
     }
-
-    private bool IsAtStartOfLine() =>
-        _currentIndex <= 1 || _allTokens[_currentIndex - 2].Kind ==
-        TokenKind.NewLine;
-
-
+    
     private Token MoveOnNextToken()
     {
         if (!_tokenPointer.MoveNext())
@@ -129,7 +122,6 @@ public class Parser : IParser
             _currentToken = _tokenPointer.Current;
             _currentIndex++;
         }
-
         return _currentToken;
     }
 }
