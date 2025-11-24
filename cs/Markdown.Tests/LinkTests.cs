@@ -21,9 +21,9 @@ public class LinkTests
     }
 
     [TestCase("[ссылка](https://example.com)", "<p><a href=\"https://example.com\">ссылка</a></p>",
-    TestName = "Простая ссылка")]
+        TestName = "Простая ссылка")]
     [TestCase("Перед [ссылка](url) после", "<p>Перед <a href=\"url\">ссылка</a> после</p>",
-    TestName = "Ссылка в середине текста")]
+        TestName = "Ссылка в середине текста")]
     [TestCase("[незакрытая ссылка(url)", "<p>[незакрытая ссылка(url)</p>",
         TestName = "Нет закрывающей скобки – остаётся текст")]
     [TestCase("[:текст](url)", "<p><a href=\"url\">:текст</a></p>",
