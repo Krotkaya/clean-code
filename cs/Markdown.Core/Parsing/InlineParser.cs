@@ -4,7 +4,7 @@ using Markdown.Core.Parsing.Nodes;
 
 namespace Markdown.Core.Parsing;
 
-internal class InlineParser(
+public class InlineParser(
     IReadOnlyList<Token> tokens,
     Func<Token> moveNext,
     Func<Token> currentToken,

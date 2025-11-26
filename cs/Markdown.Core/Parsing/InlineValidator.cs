@@ -2,7 +2,7 @@ using Markdown.Core.Lexing;
 
 namespace Markdown.Core.Parsing;
 
-internal class InlineValidator
+public class InlineValidator
 {
     public bool IsValidEmphasisClose(IReadOnlyList<Token> tokens, int startIndex, int closeIndex)
     {
